@@ -1,10 +1,19 @@
+# Jerry Lakin - 7/30/20
+# This script creates a tidy dataset out of raw smartphone movement data provided by 
+# UC Irvine. The data come from an experiment in which 30 subjects performed activities
+# of daily living while carrying a waist-mounted smartphone with embedded inertial 
+# sensors 
+# Link: https://archive.ics.uci.edu/ml/datasets/human+activity+recognition+using+smartphones
+# The final dataset will show averages of each measurement variable for each combination 
+# of subject and activity
+
 # Import dplyr library
 library(dplyr)
 
 # Import feature names as a vector
 features <- read.table("./UCI HAR Dataset/features.txt", header=FALSE)[, 2]
 
-#Import activity labels as a dataframe
+# Import activity reference table as a dataframe
 activityList <- read.table("./UCI HAR Dataset/activity_labels.txt", header=FALSE, col.names=c("y", "activity"))
 
 # Import test data 
