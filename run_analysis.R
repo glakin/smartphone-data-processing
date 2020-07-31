@@ -37,7 +37,7 @@ activity <- merge(y, activityList, sort=FALSE)
 # Extract only the means and standard deviations for each measurement. I am searching
 # for the string "mean(" rather than "mean" because I do not want to include the 
 # meanFreq measurements
-XReduced <- X[,grepl("mean\\(|std",features)]
+XReduced <- X[, grepl("mean\\(|std", features)]
 
 # Get features from reduced X
 featuresReduced <- colnames(XReduced)
@@ -53,11 +53,11 @@ dfAvg <- df %>%
 # Create new column names for the averaged variables
 featuresAvg <- featuresReduced
 for(i in 1:length(featuresReduced)) {
-    featuresAvg[i] <- paste("avg.",featuresAvg[i],sep="")
+    featuresAvg[i] <- paste("avg.", featuresAvg[i], sep="")
 }
 
 # Give the tidy dataset descriptive column names
-colnames(dfAvg) <- c("subject.id","activity.id","activity",featuresAvg)
+colnames(dfAvg) <- c("subject.id", "activity.id", "activity", featuresAvg)
 
 # Write to a txt file
 write.table(dfAvg, file = "smartphone_movement_data.txt", row.names=FALSE)
