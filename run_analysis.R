@@ -1,21 +1,54 @@
-#Import feature names first because they will be used to assign column names
-features <- read.table("./UCI HAR Dataset/features.txt",header=FALSE)
+# Import dplyr library
+library(dplyr)
 
-#Import test data and combine it into a single dataframe
-XTest <- read.fwf("./UCI HAR Dataset/test/X_test.txt",widths=rep(16,times=561), col.names = features[,2])
-yTest <- read.csv("./UCI HAR Dataset/test/y_test.txt",header=FALSE,col.names="y")
-subjectTest <- read.csv("./UCI HAR Dataset/test/subject_test.txt",header=FALSE,col.names="subject")
-test <- cbind(subjectTest,XTest,yTest)
+# Import feature names as a vector
+features <- read.table("./UCI HAR Dataset/features.txt", header=FALSE)[, 2]
 
-#Import training data and combine it into a single dataframe
-XTrain <- read.fwf("./UCI HAR Dataset/train/X_train.txt",widths=rep(16,times=561), col.names = features[,2])
-yTrain <- read.csv("./UCI HAR Dataset/train/y_train.txt",header=FALSE,col.names="y")
-subjectTrain <- read.csv("./UCI HAR Dataset/train/subject_train.txt",header=FALSE,col.names="subject")
-train <- cbind(subjectTrain,XTrain,yTrain)
+#Import activity labels as a dataframe
+activityList <- read.table("./UCI HAR Dataset/activity_labels.txt", header=FALSE, col.names=c("y", "activity"))
 
-#Combine test and train data
-testTrain <- rbind(test,train)
+# Import test data 
+XTest <- read.fwf("./UCI HAR Dataset/test/X_test.txt", widths=rep(16, times=561), col.names=features)
+yTest <- read.table("./UCI HAR Dataset/test/y_test.txt", header=FALSE, col.names="y")
+subjectTest <- read.table("./UCI HAR Dataset/test/subject_test.txt", header=FALSE, col.names="subject")
 
-#Extract only the means and standard deviations for each measurement
-meanStd <- testTrain[grepl("mean|std",features[,2]),]
+# Import train data 
+XTrain <- read.fwf("./UCI HAR Dataset/train/X_train.txt", widths=rep(16, times=561), col.names=features)
+yTrain <- read.table("./UCI HAR Dataset/train/y_train.txt", header=FALSE, col.names="y")
+subjectTrain <- read.table("./UCI HAR Dataset/train/subject_train.txt", header=FALSE, col.names="subject")
 
+# Combine test and train data
+X <- rbind(XTest, XTrain)
+y <- rbind(yTest, yTrain)
+subject <- rbind(subjectTest, subjectTrain)
+
+# Merge y vector with activity reference table to get activity labels
+activity <- merge(y, activityList, sort=FALSE)
+
+# Extract only the means and standard deviations for each measurement. I am searching
+# for the string "mean(" rather than "mean" because I do not want to include the 
+# meanFreq measurements
+XReduced <- X[,grepl("mean\\(|std",features)]
+
+# Get features from reduced X
+featuresReduced <- colnames(XReduced)
+
+# Combine subject, activity and X
+df <- cbind(subject, activity, XReduced)
+
+# Create summary table averaging each variable for each subject and activity
+dfAvg <- df %>%
+    group_by(subject, y, activity) %>%
+    summarize_all(mean)
+
+# Create new column names for the averaged variables
+featuresAvg <- featuresReduced
+for(i in 1:length(featuresReduced)) {
+    featuresAvg[i] <- paste("avg.",featuresAvg[i],sep="")
+}
+
+# Give the tidy dataset descriptive column names
+colnames(dfAvg) <- c("subject.id","activity.id","activity",featuresAvg)
+
+# Write to a txt file
+write.table(dfAvg, file = "smartphone_movement_data.txt", row.names=FALSE)
