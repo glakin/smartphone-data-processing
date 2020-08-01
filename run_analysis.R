@@ -45,9 +45,12 @@ featuresReduced <- colnames(XReduced)
 # Combine subject, activity and X
 df <- cbind(subject, activity, XReduced)
 
+# Give the dataset descriptive column names
+colnames(df) <- c("subject.id", "activity.id", "activity", featuresReduced)
+
 # Create summary table averaging each variable for each subject and activity
 dfAvg <- df %>%
-    group_by(subject, y, activity) %>%
+    group_by(subject.id, activity.id, activity) %>%
     summarize_all(mean)
 
 # Create new column names for the averaged variables
